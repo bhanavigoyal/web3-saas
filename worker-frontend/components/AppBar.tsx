@@ -1,3 +1,4 @@
+'use client';
 import { BACKEND_URL } from "@/utils";
 import { useWallet } from "@solana/wallet-adapter-react"
 import { WalletConnectButton, WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
@@ -29,11 +30,11 @@ export const AppBar=()=>{
         signAndSend();
     },[publicKey])
     
-    return <div className="border bottom-1 p-2 flex justify-between text-lg">
+    return <div className="border bottom-1 p-2 flex justify-between text-lg items-center">
         <div>
             Turkify (Worker)
         </div>
-        <div>
+        <div className="flex">
             <div>
                 <Button label={`Pay me Out (${balance}) SOL`} onClick={()=>{
                     axios.post(`${BACKEND_URL}/v1/worker/payout`,{

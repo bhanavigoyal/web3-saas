@@ -14,7 +14,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>){
     const network = WalletAdapterNetwork.Devnet;
-    const endpoint = (process.env.RPC_URL ?? "");
+    const endpoint = (process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "");
 
     const wallets= useMemo(()=>[
 
@@ -24,7 +24,9 @@ export default function RootLayout({
         <ConnectionProvider endpoint={endpoint}>
             <WalletProvider wallets={wallets} autoConnect>
                 <WalletModalProvider>
-                    {children}
+                    <div className='font-mono'>
+                        {children}
+                    </div>
                 </WalletModalProvider>
             </WalletProvider>
         </ConnectionProvider>

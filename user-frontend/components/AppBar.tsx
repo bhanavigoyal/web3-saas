@@ -27,7 +27,7 @@ export const AppBar=()=>{
         signAndSend();
     },[publicKey])
 
-    return <div className="border bottom-1 p-2 flex justify-between text-lg">
+    return <div className="border bottom-1 p-2 flex justify-between text-lg items-center">
         <div>
             Turkify
         </div>

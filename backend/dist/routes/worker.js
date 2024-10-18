@@ -27,7 +27,7 @@ const router = (0, express_1.Router)();
 const TOTAL_SUBMISSIONS = 100;
 const prismaClient = new client_1.PrismaClient();
 const connection = new web3_js_1.Connection((_a = process.env.RPC_URL) !== null && _a !== void 0 ? _a : "");
-const privateKey = "";
+const privateKey = process.env.PRIVATE_KEY;
 router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { publicKey, signature } = req.body;
     const message = new TextEncoder().encode("Sign into mechanical Turks as a worker");
@@ -154,11 +154,11 @@ router.post("/payout", middlewares_1.workerMiddleware, (req, res) => __awaiter(v
         });
     }
     const transaction = new web3_js_1.Transaction().add(web3_js_1.SystemProgram.transfer({
-        fromPubkey: new web3_js_1.PublicKey(""),
+        fromPubkey: new web3_js_1.PublicKey(process.env.PARENT_WALLET_ADDRESS || ""),
         toPubkey: new web3_js_1.PublicKey(worker.address),
         lamports: 1000000000 * worker.pending_amount / config_1.TOTAL_DECIMALS,
     }));
-    const keypair = web3_js_1.Keypair.fromSecretKey(bs58_1.default.decode(privateKey));
+    const keypair = web3_js_1.Keypair.fromSecretKey(bs58_1.default.decode(privateKey || ""));
     // TODO: There's a double spending problem here
     // The user can request the withdrawal multiple times
     // Can u figure out a way to fix it?

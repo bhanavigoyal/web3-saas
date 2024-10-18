@@ -59,7 +59,7 @@ export const Upload=()=>{
 
     return <div className="flex justify-center ">
         <div className="flex flex-col p-5 max-w-screen-lg w-full">
-            <div className="text-2xl font-semibold">
+            <div className="text-2xl font-bold">
                 Create a Task
             </div>
             <div className="flex items-center pt-2">

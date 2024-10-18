@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a, _b, _c;
+var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const express_1 = require("express");
@@ -24,11 +24,11 @@ const types_1 = require("../types");
 const tweetnacl_1 = __importDefault(require("tweetnacl"));
 const web3_js_1 = require("@solana/web3.js");
 const connection = new web3_js_1.Connection((_a = process.env.RPC_URL) !== null && _a !== void 0 ? _a : "");
-const PARENT_WALLET_ADDRESS = "";
+const PARENT_WALLET_ADDRESS = (_b = process.env.PARENT_WALLET_ADDRESS) !== null && _b !== void 0 ? _b : "";
 const s3Client = new client_s3_1.S3Client({
     credentials: {
-        accessKeyId: (_b = process.env.AWS_ACCESS_KEY_ID) !== null && _b !== void 0 ? _b : "",
-        secretAccessKey: (_c = process.env.AWS_SECRET_ACCESS_KEY) !== null && _c !== void 0 ? _c : ""
+        accessKeyId: (_c = process.env.AWS_ACCESS_KEY_ID) !== null && _c !== void 0 ? _c : "",
+        secretAccessKey: (_d = process.env.AWS_SECRET_ACCESS_KEY) !== null && _d !== void 0 ? _d : ""
     },
     region: "eu-north-1"
 });

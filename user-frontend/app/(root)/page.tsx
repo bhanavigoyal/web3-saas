@@ -1,5 +1,3 @@
-
-
 import { Upload } from "@/components/Upload";
 import { AppBar } from "@/components/AppBar";
 import { Hero } from "@/components/Hero";
