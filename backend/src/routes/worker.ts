@@ -15,7 +15,7 @@ const TOTAL_SUBMISSIONS = 100;
 const prismaClient = new PrismaClient();
 const connection = new Connection(process.env.RPC_URL ?? "");
 
-const privateKey = "";
+const privateKey = process.env.PRIVATE_KEY;
 
 router.post("/signin", async(req,res)=>{
 
@@ -173,13 +173,13 @@ router.post("/payout", workerMiddleware, async(req,res)=>{
 
     const transaction = new Transaction().add(
         SystemProgram.transfer({
-            fromPubkey: new PublicKey(""),
+            fromPubkey: new PublicKey(process.env.PARENT_WALLET_ADDRESS|| ""),
             toPubkey:new PublicKey(worker.address),
             lamports:1000_000_000 * worker.pending_amount / TOTAL_DECIMALS,
         })
     )
 
-    const keypair = Keypair.fromSecretKey(bs58.decode(privateKey));
+    const keypair = Keypair.fromSecretKey(bs58.decode(privateKey||""));
 
     // TODO: There's a double spending problem here
     // The user can request the withdrawal multiple times

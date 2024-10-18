@@ -17,6 +17,8 @@ export const Upload=()=>{
     const {publicKey, sendTransaction} = useWallet();
     const { connection } = useConnection();
 
+    const parentAddress = process.env.PARENT_WALLET_ADDRESS
+
     async function onSubmit(){
         console.log("on submit")
         const response = await axios.post(`${BACKEND_URL}/v1/user/task`,{
@@ -38,7 +40,7 @@ export const Upload=()=>{
         const transaction = new Transaction().add(
             SystemProgram.transfer({
                 fromPubkey: publicKey!,
-                toPubkey: new PublicKey(""),
+                toPubkey: new PublicKey(parentAddress|| ""),
                 lamports: 100000000
             })
         );

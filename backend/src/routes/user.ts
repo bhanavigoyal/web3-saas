@@ -12,7 +12,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 
 const connection = new Connection(process.env.RPC_URL ?? "");
 
-const PARENT_WALLET_ADDRESS = "";
+const PARENT_WALLET_ADDRESS = process.env.PARENT_WALLET_ADDRESS ?? "";
 
 const s3Client = new S3Client({
     credentials:{
