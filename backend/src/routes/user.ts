@@ -96,8 +96,6 @@ router.get("/generatepresignedURL",authMiddleware, async(req,res)=>{
         preSignedURL: url,
         fields
     })
-    console.log(url)
-    console.log(fields)
 });
 
 router.post("/task", authMiddleware, async(req, res)=>{
@@ -181,7 +179,6 @@ router.get("/task/:taskId",authMiddleware, async(req,res)=>{
         }
     })
 
-    console.log(taskDetails)
 
     if(!taskDetails){
         return res.status(411).json({
