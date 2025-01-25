@@ -1,7 +1,7 @@
 'use client';
 import { BACKEND_URL } from "@/utils";
 import { useWallet } from "@solana/wallet-adapter-react"
-import { WalletConnectButton, WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import axios from "axios";
 import { useEffect } from "react";
 

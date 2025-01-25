@@ -22,7 +22,8 @@ export const Upload=()=>{
     async function onSubmit(){
         console.log("on submit")
         const response = await axios.post(`${BACKEND_URL}/v1/user/task`,{
-            options: images.map(image=>({
+            options: images.map((image, index)=>({
+                key:index,
                 imageUrl : image
             })),
             title,
@@ -71,9 +72,9 @@ export const Upload=()=>{
             }} type="text" className="border w-full mt-1 text-sm p-2 rounded-lg bg-gray-50 text-slate-900 focus:ring-slate-400 focus:ring-2 focus:outline-none" placeholder="What is your task?" required/>
             <label className="pt-6 font-medium">Add Images</label>
             <div className="flex justify-center pt-4 max-w-screen-lg">
-                {images.map(image=><UploadImage image={image} onImageAdded={(imageURL)=>{
+                {images.map((image, index)=><UploadImage key={index} image={image} onImageAdded={(imageURL)=>{
                     setImages(i=>[...i, imageURL])
-                }}/>)
+                }}/> )
             }
             </div>
             <div className="flex flex-col items-center">
