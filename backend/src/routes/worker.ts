@@ -16,6 +16,7 @@ const prismaClient = new PrismaClient();
 const connection = new Connection(process.env.RPC_URL ?? "");
 
 const privateKey = process.env.PRIVATE_KEY;
+const parentAddress = process.env.PARENT_WALLET_ADDRESS;
 
 router.post("/signin", async(req,res)=>{
 
@@ -171,15 +172,25 @@ router.post("/payout", workerMiddleware, async(req,res)=>{
         })
     }
 
+    if (!parentAddress){
+        console.log("no parentAddress");
+        return
+    }
+
+    if (!privateKey){
+        console.log("no privatekey of parent wallet");
+        return
+    }
+
     const transaction = new Transaction().add(
         SystemProgram.transfer({
-            fromPubkey: new PublicKey(process.env.PARENT_WALLET_ADDRESS|| ""),
+            fromPubkey: new PublicKey(parentAddress),
             toPubkey:new PublicKey(worker.address),
             lamports:1000_000_000 * worker.pending_amount / TOTAL_DECIMALS,
         })
     )
 
-    const keypair = Keypair.fromSecretKey(bs58.decode(privateKey||""));
+    const keypair = Keypair.fromSecretKey(bs58.decode(privateKey));
 
     // TODO: There's a double spending problem here
     // The user can request the withdrawal multiple times
