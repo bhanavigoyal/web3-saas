@@ -12,7 +12,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 
 const connection = new Connection(process.env.RPC_URL ?? "");
 
-const PARENT_WALLET_ADDRESS = process.env.PARENT_WALLET_ADDRESS ?? "";
+const PARENT_WALLET_ADDRESS = process.env.PARENT_WALLET_ADDRESS;
 
 const s3Client = new S3Client({
     credentials:{
@@ -27,50 +27,57 @@ const router = Router();
 const prismaClient = new PrismaClient();
 
 router.post("/signin", async(req,res)=>{
+    try{
 
-    const {publicKey, signature} = req.body;
-    const message = new TextEncoder().encode("Sign into mechanical Turks");
-
-    const result = nacl.sign.detached.verify(
-        message,
-        new PublicKey(publicKey).toBytes(),
-        new Uint8Array(signature.data)
-    );
-
-    if(!result){
-        return res.status(411).json({
-            message: "Incorrect Signature"
-        });
-    }
+        const {publicKey, signature} = req.body;
+        console.log(signature)
+        const message = new TextEncoder().encode("Sign into mechanical Turks");
+        const reconstructedSignature = new Uint8Array(signature.data)
     
-    const existingUser = await prismaClient.user.findFirst({
-        where:{
-            address: publicKey
+        const result = nacl.sign.detached.verify(
+            message,
+            reconstructedSignature,
+            new PublicKey(publicKey).toBytes()
+        );
+        if(!result){
+            return res.status(411).json({
+                message: "Incorrect Signature"
+            });
         }
-    });
-
-    if(existingUser){
-        const token = jwt.sign({
-            userId: existingUser.id
-        }, JWT_SECRET)
-
-        res.json({
-            token
-        })
-    }else{
-        const user = await prismaClient.user.create({
-            data:{
+        
+        const existingUser = await prismaClient.user.findFirst({
+            where:{
                 address: publicKey
             }
-        })
-
-        const token = jwt.sign({
-            userId: user.id
-        },JWT_SECRET)
-
-        res.json({
-            token
-        })
+        });
+        if(existingUser){
+            const token = jwt.sign({
+                userId: existingUser.id
+            }, JWT_SECRET)
+    
+            res.json({
+                token
+            })
+        }else{
+            const user = await prismaClient.user.create({
+                data:{
+                    address: publicKey
+                }
+            })
+    
+            const token = jwt.sign({
+                userId: user.id
+            },JWT_SECRET)
+    
+            res.json({
+                token
+            })
+        }
+    }catch(error){
+        console.error("Error in /signin route:", error);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
     }
 
 });
@@ -111,24 +118,37 @@ router.post("/task", authMiddleware, async(req, res)=>{
         }
     })
 
+    if(!user){
+        return res.status(401).json({
+            message:"no user found"
+        })
+    }
+
     if(!parsedData.success){
-        return res.status(411).json({
+        return res.status(402).json({
             message: "wrong inputs"
         })
     }
 
     const transaction = await connection.getTransaction(parsedData.data.signature,{
-        maxSupportedTransactionVersion:1
+        maxSupportedTransactionVersion:1,
+        commitment: "confirmed"
     });
 
+    // const transaction = await connection.getSignatureStatus(parsedData.data.signature, {
+    //     searchTransactionHistory: true,
+    // });
+
     if((transaction?.meta?.postBalances[1]??0)-(transaction?.meta?.preBalances[1]??0)!==100000000){
-        return res.status(411).json({
+        return res.status(403).json({
             message: "transaction signature amount incorrect"
         })
     }
 
-    if(transaction?.transaction.message.getAccountKeys().get(1)?.toString() ! == PARENT_WALLET_ADDRESS){
-        return res.status(411).json({
+    if(transaction?.transaction.message.getAccountKeys().get(1)?.toString() !== PARENT_WALLET_ADDRESS){
+        console.log(transaction?.transaction.message.getAccountKeys().get(1)?.toString())
+        console.log(PARENT_WALLET_ADDRESS)
+        return res.status(404).json({
             message: "transaction sent to wrong address"
         })
     }

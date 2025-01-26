@@ -17,9 +17,15 @@ export const Upload=()=>{
     const {publicKey, sendTransaction} = useWallet();
     const { connection } = useConnection();
 
-    const parentAddress = process.env.PARENT_WALLET_ADDRESS
+    const parentAddress = process.env.NEXT_PUBLIC_PARENT_WALLET_ADDRESS
 
     async function onSubmit(){
+        if (!txSignature) {
+            console.error("Missing transaction signature");
+            alert("Transaction signature missing.");
+            return;
+        }
+        console.log(parentAddress)
         console.log("on submit")
         const response = await axios.post(`${BACKEND_URL}/v1/user/task`,{
             options: images.map((image, index)=>({
@@ -38,10 +44,25 @@ export const Upload=()=>{
     }
 
     async function makePayment() {
+        if (!publicKey) {
+            console.error("No public key available in wallet");
+            return;
+        }
+    
+        if (!parentAddress) {
+            console.error("missing PARENT_WALLET_ADDRESS");
+            return;
+        }
+
+        if (!PublicKey.isOnCurve(parentAddress)){
+            console.error("Invalid parentkey");
+            return;
+        }
+
         const transaction = new Transaction().add(
             SystemProgram.transfer({
-                fromPubkey: publicKey!,
-                toPubkey: new PublicKey(parentAddress|| ""),
+                fromPubkey: publicKey,
+                toPubkey: new PublicKey(parentAddress),
                 lamports: 100000000
             })
         );
@@ -51,10 +72,21 @@ export const Upload=()=>{
             value: {blockhash, lastValidBlockHeight}
         } = await connection.getLatestBlockhashAndContext();
 
-        const signature = await sendTransaction(transaction, connection, {minContextSlot});
+        console.log("transaction before sending: ", transaction)
+        console.log("Connection:", connection);
+        console.log("Public Key:", publicKey);
 
-        await connection.confirmTransaction({blockhash, lastValidBlockHeight,signature});
-        setTxSignature(signature);
+        try{
+
+            const signature = await sendTransaction(transaction, connection, {minContextSlot});
+    
+            await connection.confirmTransaction({blockhash, lastValidBlockHeight,signature});
+            setTxSignature(signature);
+        }catch(error){
+            console.error("Transaction error:", error);
+            alert(`Transaction failed: ${error}`);
+        }
+
     }
 
 

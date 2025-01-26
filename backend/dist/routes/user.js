@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a, _b, _c, _d;
+var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const express_1 = require("express");
@@ -24,49 +24,59 @@ const types_1 = require("../types");
 const tweetnacl_1 = __importDefault(require("tweetnacl"));
 const web3_js_1 = require("@solana/web3.js");
 const connection = new web3_js_1.Connection((_a = process.env.RPC_URL) !== null && _a !== void 0 ? _a : "");
-const PARENT_WALLET_ADDRESS = (_b = process.env.PARENT_WALLET_ADDRESS) !== null && _b !== void 0 ? _b : "";
+const PARENT_WALLET_ADDRESS = process.env.PARENT_WALLET_ADDRESS;
 const s3Client = new client_s3_1.S3Client({
     credentials: {
-        accessKeyId: (_c = process.env.AWS_ACCESS_KEY_ID) !== null && _c !== void 0 ? _c : "",
-        secretAccessKey: (_d = process.env.AWS_SECRET_ACCESS_KEY) !== null && _d !== void 0 ? _d : ""
+        accessKeyId: (_b = process.env.AWS_ACCESS_KEY_ID) !== null && _b !== void 0 ? _b : "",
+        secretAccessKey: (_c = process.env.AWS_SECRET_ACCESS_KEY) !== null && _c !== void 0 ? _c : ""
     },
     region: "eu-north-1"
 });
 const router = (0, express_1.Router)();
 const prismaClient = new client_1.PrismaClient();
 router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { publicKey, signature } = req.body;
-    const message = new TextEncoder().encode("Sign into mechanical Turks");
-    const result = tweetnacl_1.default.sign.detached.verify(message, new web3_js_1.PublicKey(publicKey).toBytes(), new Uint8Array(signature.data));
-    if (!result) {
-        return res.status(411).json({
-            message: "Incorrect Signature"
-        });
-    }
-    const existingUser = yield prismaClient.user.findFirst({
-        where: {
-            address: publicKey
+    try {
+        const { publicKey, signature } = req.body;
+        console.log(signature);
+        const message = new TextEncoder().encode("Sign into mechanical Turks");
+        const reconstructedSignature = new Uint8Array(signature.data);
+        const result = tweetnacl_1.default.sign.detached.verify(message, reconstructedSignature, new web3_js_1.PublicKey(publicKey).toBytes());
+        if (!result) {
+            return res.status(411).json({
+                message: "Incorrect Signature"
+            });
         }
-    });
-    if (existingUser) {
-        const token = jsonwebtoken_1.default.sign({
-            userId: existingUser.id
-        }, config_1.JWT_SECRET);
-        res.json({
-            token
-        });
-    }
-    else {
-        const user = yield prismaClient.user.create({
-            data: {
+        const existingUser = yield prismaClient.user.findFirst({
+            where: {
                 address: publicKey
             }
         });
-        const token = jsonwebtoken_1.default.sign({
-            userId: user.id
-        }, config_1.JWT_SECRET);
-        res.json({
-            token
+        if (existingUser) {
+            const token = jsonwebtoken_1.default.sign({
+                userId: existingUser.id
+            }, config_1.JWT_SECRET);
+            res.json({
+                token
+            });
+        }
+        else {
+            const user = yield prismaClient.user.create({
+                data: {
+                    address: publicKey
+                }
+            });
+            const token = jsonwebtoken_1.default.sign({
+                userId: user.id
+            }, config_1.JWT_SECRET);
+            res.json({
+                token
+            });
+        }
+    }
+    catch (error) {
+        console.error("Error in /signin route:", error);
+        res.status(500).json({
+            message: "Internal Server Error",
         });
     }
 }));
@@ -89,11 +99,9 @@ router.get("/generatepresignedURL", middlewares_1.authMiddleware, (req, res) => 
         preSignedURL: url,
         fields
     });
-    console.log(url);
-    console.log(fields);
 }));
 router.post("/task", middlewares_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     //@ts-ignore
     const userId = req.userId;
     const body = req.body;
@@ -103,21 +111,32 @@ router.post("/task", middlewares_1.authMiddleware, (req, res) => __awaiter(void 
             id: userId
         }
     });
+    if (!user) {
+        return res.status(401).json({
+            message: "no user found"
+        });
+    }
     if (!parsedData.success) {
-        return res.status(411).json({
+        return res.status(402).json({
             message: "wrong inputs"
         });
     }
     const transaction = yield connection.getTransaction(parsedData.data.signature, {
-        maxSupportedTransactionVersion: 1
+        maxSupportedTransactionVersion: 1,
+        commitment: "confirmed"
     });
+    // const transaction = await connection.getSignatureStatus(parsedData.data.signature, {
+    //     searchTransactionHistory: true,
+    // });
     if (((_b = (_a = transaction === null || transaction === void 0 ? void 0 : transaction.meta) === null || _a === void 0 ? void 0 : _a.postBalances[1]) !== null && _b !== void 0 ? _b : 0) - ((_d = (_c = transaction === null || transaction === void 0 ? void 0 : transaction.meta) === null || _c === void 0 ? void 0 : _c.preBalances[1]) !== null && _d !== void 0 ? _d : 0) !== 100000000) {
-        return res.status(411).json({
+        return res.status(403).json({
             message: "transaction signature amount incorrect"
         });
     }
-    if (((_e = transaction === null || transaction === void 0 ? void 0 : transaction.transaction.message.getAccountKeys().get(1)) === null || _e === void 0 ? void 0 : _e.toString()) == PARENT_WALLET_ADDRESS) {
-        return res.status(411).json({
+    if (((_e = transaction === null || transaction === void 0 ? void 0 : transaction.transaction.message.getAccountKeys().get(1)) === null || _e === void 0 ? void 0 : _e.toString()) !== PARENT_WALLET_ADDRESS) {
+        console.log((_f = transaction === null || transaction === void 0 ? void 0 : transaction.transaction.message.getAccountKeys().get(1)) === null || _f === void 0 ? void 0 : _f.toString());
+        console.log(PARENT_WALLET_ADDRESS);
+        return res.status(404).json({
             message: "transaction sent to wrong address"
         });
     }
@@ -159,7 +178,6 @@ router.get("/task/:taskId", middlewares_1.authMiddleware, (req, res) => __awaite
             options: true
         }
     });
-    console.log(taskDetails);
     if (!taskDetails) {
         return res.status(411).json({
             message: "you don't have access to this task"

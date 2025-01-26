@@ -10,7 +10,8 @@ const config_1 = require("./config");
 function authMiddleware(req, res, next) {
     var _a;
     const authHeader = (_a = req.headers["authorization"]) !== null && _a !== void 0 ? _a : "";
-    const token = authHeader.split(" ")[1];
+    // const token = authHeader.split(" ")[1];
+    const token = authHeader;
     try {
         const decoded = jsonwebtoken_1.default.verify(token, config_1.JWT_SECRET);
         //@ts-ignore

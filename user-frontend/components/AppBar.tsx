@@ -15,8 +15,9 @@ export const AppBar=()=>{
 
         const message = new TextEncoder().encode("Sign into mechanical Turks");
         const signature = await signMessage?.(message);
+        console.log(signature)
         const response = await axios.post(`${BACKEND_URL}/v1/user/signin`,{
-            signature,
+            signature:signature,
             publicKey: publicKey.toString()
         });
 
