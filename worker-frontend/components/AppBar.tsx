@@ -5,13 +5,13 @@ import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapte
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Button } from "./Button";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 
 export const AppBar=()=>{
 
     const {publicKey, signMessage} = useWallet();
     const [balance, setBalance] = useState(0);
-    const navigate = useNavigate();
+    const router = useRouter();
 
     async function signAndSend(){
         if(!publicKey){
@@ -33,8 +33,8 @@ export const AppBar=()=>{
     },[publicKey])
     
     return <div className="border bottom-1 p-2 flex justify-between text-lg items-center">
-        <div onClick={()=>{
-            navigate("/")
+        <div className="cursor-pointer" onClick={()=>{
+            router.push("/")
         }}>
             CrowdRank | Vote & Earn 
         </div>
