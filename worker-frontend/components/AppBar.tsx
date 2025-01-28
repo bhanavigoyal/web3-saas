@@ -1,15 +1,17 @@
 'use client';
 import { BACKEND_URL } from "@/utils";
 import { useWallet } from "@solana/wallet-adapter-react"
-import { WalletConnectButton, WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Button } from "./Button";
+import { useNavigate } from "react-router-dom";
 
 export const AppBar=()=>{
 
     const {publicKey, signMessage} = useWallet();
     const [balance, setBalance] = useState(0);
+    const navigate = useNavigate();
 
     async function signAndSend(){
         if(!publicKey){
@@ -31,8 +33,10 @@ export const AppBar=()=>{
     },[publicKey])
     
     return <div className="border bottom-1 p-2 flex justify-between text-lg items-center">
-        <div>
-            Turkify (Worker)
+        <div onClick={()=>{
+            navigate("/")
+        }}>
+            CrowdRank | Vote & Earn 
         </div>
         <div className="flex">
             <div>

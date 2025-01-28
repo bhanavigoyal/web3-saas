@@ -12,7 +12,6 @@ export const UploadImage=({onImageAdded, image}:{
     const [uploading, setUploading] = useState(false);
 
     async function onFileAdded(e:any){
-        console.log("adding")
         setUploading(true);
         
         try{

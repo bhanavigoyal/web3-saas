@@ -33,7 +33,6 @@ export default function Page({params:{
     useEffect(()=>{
         getTaskDetails(taskId)
             .then((data)=>{
-                console.log(data)
                 setResult(data.result),
                 setTaskDetails(data.taskDetails)
             })

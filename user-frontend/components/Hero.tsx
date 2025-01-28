@@ -6,5 +6,8 @@ export const Hero=()=>{
         <div className="pt-5">
             Your one stop destination for getting your thumbnails voted
         </div>
+        <div className="text-xs font-light">
+            (use devnet for transactions)
+        </div>
     </div>
 }

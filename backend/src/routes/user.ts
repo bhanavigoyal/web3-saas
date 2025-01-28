@@ -30,7 +30,6 @@ router.post("/signin", async(req,res)=>{
     try{
 
         const {publicKey, signature} = req.body;
-        console.log(signature)
         const message = new TextEncoder().encode("Sign into mechanical Turks");
         const reconstructedSignature = new Uint8Array(signature.data)
     
@@ -146,8 +145,6 @@ router.post("/task", authMiddleware, async(req, res)=>{
     }
 
     if(transaction?.transaction.message.getAccountKeys().get(1)?.toString() !== PARENT_WALLET_ADDRESS){
-        console.log(transaction?.transaction.message.getAccountKeys().get(1)?.toString())
-        console.log(PARENT_WALLET_ADDRESS)
         return res.status(404).json({
             message: "transaction sent to wrong address"
         })

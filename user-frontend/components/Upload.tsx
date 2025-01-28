@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BACKEND_URL } from "@/utils";
 import axios from "axios";
 import { UploadImage } from "./UploadImage";
-import { Button } from "./Button";
+import { Button, LoadingButton } from "./Button";
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
@@ -12,6 +12,7 @@ export const Upload=()=>{
     const [title, setTitle] = useState("");
     const [images, setImages] = useState<string[]>([]);
     const [txSignature, setTxSignature] = useState("");
+    const [loading, setLoading] = useState(false)
 
     const router = useRouter();
     const {publicKey, sendTransaction} = useWallet();
@@ -20,13 +21,12 @@ export const Upload=()=>{
     const parentAddress = process.env.NEXT_PUBLIC_PARENT_WALLET_ADDRESS
 
     async function onSubmit(){
+        setLoading(true)
         if (!txSignature) {
             console.error("Missing transaction signature");
             alert("Transaction signature missing.");
             return;
         }
-        console.log(parentAddress)
-        console.log("on submit")
         const response = await axios.post(`${BACKEND_URL}/v1/user/task`,{
             options: images.map((image, index)=>({
                 key:index,
@@ -41,9 +41,11 @@ export const Upload=()=>{
         })
 
         router.push(`task/${response.data.id}`)
+        setLoading(false)
     }
 
     async function makePayment() {
+        setLoading(true)
         if (!publicKey) {
             console.error("No public key available in wallet");
             return;
@@ -72,10 +74,6 @@ export const Upload=()=>{
             value: {blockhash, lastValidBlockHeight}
         } = await connection.getLatestBlockhashAndContext();
 
-        console.log("transaction before sending: ", transaction)
-        console.log("Connection:", connection);
-        console.log("Public Key:", publicKey);
-
         try{
 
             const signature = await sendTransaction(transaction, connection, {minContextSlot});
@@ -86,6 +84,8 @@ export const Upload=()=>{
             console.error("Transaction error:", error);
             alert(`Transaction failed: ${error}`);
         }
+
+        setLoading(false)
 
     }
 
@@ -115,9 +115,16 @@ export const Upload=()=>{
                         setImages(i=>[...i,imageURL])
                     }}/>
                 </div>
-                <div>
-                    <Button label={txSignature? "Submit Task":"Pay 0.1 SOL"} onClick={txSignature? onSubmit:makePayment}/>
-                </div>
+                {
+                    loading? <div>
+                        <LoadingButton/>
+                    </div>
+                :
+                    <div>
+                        <Button label={txSignature? "Submit Task":"Pay 0.1 SOL"} onClick={txSignature? onSubmit:makePayment}/>
+                    </div>
+
+                }
             </div>
         </div>
     </div>

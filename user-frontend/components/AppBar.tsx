@@ -3,10 +3,12 @@ import { BACKEND_URL } from "@/utils";
 import { useWallet } from "@solana/wallet-adapter-react"
 import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export const AppBar=()=>{
     const {publicKey, signMessage} = useWallet();
+    const router = useRouter();
 
     async function signAndSend(){
         if(!publicKey){
@@ -15,7 +17,6 @@ export const AppBar=()=>{
 
         const message = new TextEncoder().encode("Sign into mechanical Turks");
         const signature = await signMessage?.(message);
-        console.log(signature)
         const response = await axios.post(`${BACKEND_URL}/v1/user/signin`,{
             signature:signature,
             publicKey: publicKey.toString()
@@ -29,8 +30,10 @@ export const AppBar=()=>{
     },[publicKey])
 
     return <div className="border bottom-1 p-2 flex justify-between text-lg items-center">
-        <div>
-            Turkify
+        <div className="cursor-pointer" onClick={()=>{
+            router.push("/")
+        }}>
+            CrowdRank | Creator Hub
         </div>
         <div>
             {publicKey? <WalletDisconnectButton/>:<WalletMultiButton/>}
