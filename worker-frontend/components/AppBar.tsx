@@ -7,11 +7,12 @@ import { useEffect, useState } from "react";
 import { Button } from "./Button";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useBalance } from "@/context/BalanceContext";
 
 export const AppBar=()=>{
 
     const {publicKey, signMessage} = useWallet();
-    const [balance, setBalance] = useState(0);
+    const {balance, fetchBalance} = useBalance(); 
     const router = useRouter();
 
     async function signAndSend(){
@@ -30,7 +31,10 @@ export const AppBar=()=>{
     }
 
     useEffect(()=>{
-        signAndSend();
+        if(publicKey){
+            signAndSend();
+            // getBalance();
+        }
     },[publicKey])
     
     return <div className="border bottom-1 p-2 flex justify-between text-lg items-center">
@@ -56,7 +60,8 @@ export const AppBar=()=>{
                         toast.error("Transaction failed. Try again.")
                     }
                     if (result.status === 200){
-                        toast.success("Transaction successfull")
+                        toast.success("Transaction successfull");
+                        fetchBalance();
                     }
                     
                 }}/>

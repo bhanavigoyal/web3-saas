@@ -6,6 +6,7 @@ import {
     WalletModalProvider
 } from '@solana/wallet-adapter-react-ui';
 import { Toaster } from 'react-hot-toast';
+import { BalanceProvider } from '@/context/BalanceContext';
 
 // Default styles that can be overridden by your app
 require('@solana/wallet-adapter-react-ui/styles.css');
@@ -30,7 +31,9 @@ export default function RootLayout({
         <WalletProvider wallets={wallets} autoConnect>
             <WalletModalProvider>
               <Toaster position='top-right'/>
-                {children}
+                <BalanceProvider>
+                  {children}
+                </BalanceProvider>
             </WalletModalProvider>
         </WalletProvider>
     </ConnectionProvider>

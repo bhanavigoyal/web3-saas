@@ -48,7 +48,7 @@ export const AppBar=()=>{
             CrowdRank | Creator Hub
         </div>
         <div>
-            {publicKey && isAuthenticated? <WalletDisconnectButton/>:<WalletMultiButton/>}
+            <WalletMultiButton/>
         </div>
     </div>
 }

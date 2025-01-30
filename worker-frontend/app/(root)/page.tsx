@@ -3,12 +3,16 @@ import { NextTask } from "@/components/NextTask";
 
 export default function Home() {
   return (
-    <div>
+    <div className="flex flex-col items-center h-screen">
+      <div className="w-full">
       <AppBar/>
-      <div className="text-xs font-light">
+      </div>
+      <div className="text-xs font-light flex items-center pt-2 ">
         (use devnet for transactions)
       </div>
+      <div className="w-full">
       <NextTask/>
+      </div>
     </div>
   );
 }
