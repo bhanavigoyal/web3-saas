@@ -6,6 +6,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Button } from "./Button";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export const AppBar=()=>{
 
@@ -40,14 +41,24 @@ export const AppBar=()=>{
         </div>
         <div className="flex">
             <div>
-                <Button label={`Pay me Out (${balance}) SOL`} onClick={()=>{
-                    axios.post(`${BACKEND_URL}/v1/worker/payout`,{
-
-                    },{
-                        headers:{
-                            Authorization:localStorage.getItem('token')
-                        }
-                    })
+                <Button label={`Pay me Out (${balance}) SOL`} onClick={async()=>{
+                    if (!publicKey) {
+                        toast.error("Connect your Wallet"); // Show error if no wallet is connected
+                        return;
+                    }
+                    const result = await axios.post(`${BACKEND_URL}/v1/worker/payout`,{
+                        },{
+                            headers:{
+                                Authorization:localStorage.getItem('token')
+                            }
+                        })
+                    if (result.status===401){
+                        toast.error("Transaction failed. Try again.")
+                    }
+                    if (result.status === 200){
+                        toast.success("Transaction successfull")
+                    }
+                    
                 }}/>
             </div>
             <div>

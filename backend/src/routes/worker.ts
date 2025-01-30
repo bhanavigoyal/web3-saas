@@ -173,13 +173,15 @@ router.post("/payout", workerMiddleware, async(req,res)=>{
     }
 
     if (!parentAddress){
-        console.log("no parentAddress");
-        return
+        return res.status(411).json({
+            message: "parent address not found"
+        })
     }
 
     if (!privateKey){
-        console.log("no privatekey of parent wallet");
-        return
+        return res.status(411).json({
+            message: "private key not found"
+        })
     }
 
     const transaction = new Transaction().add(
@@ -205,7 +207,7 @@ router.post("/payout", workerMiddleware, async(req,res)=>{
             [keypair]
         );
     }catch(e){
-        return res.json({
+        return res.status(401).json({
             message: "transaction failed"
         })
     }
@@ -237,7 +239,7 @@ router.post("/payout", workerMiddleware, async(req,res)=>{
         })
     })
 
-    res.json({
+    res.status(200).json({
         message: "processing payout",
         amount: worker.pending_amount
     })

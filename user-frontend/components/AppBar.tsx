@@ -4,25 +4,37 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export const AppBar=()=>{
     const {publicKey, signMessage} = useWallet();
     const router = useRouter();
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
 
     async function signAndSend(){
         if(!publicKey){
             return;
         }
 
-        const message = new TextEncoder().encode("Sign into mechanical Turks");
-        const signature = await signMessage?.(message);
-        const response = await axios.post(`${BACKEND_URL}/v1/user/signin`,{
-            signature:signature,
-            publicKey: publicKey.toString()
-        });
+        const storedToken = localStorage.getItem('token')
+        if (storedToken){
+            setIsAuthenticated(true);
+            return;
+        }
+        try{
 
-        localStorage.setItem('token', response.data.token);
+            const message = new TextEncoder().encode("Sign into mechanical Turks");
+            const signature = await signMessage?.(message);
+            const response = await axios.post(`${BACKEND_URL}/v1/user/signin`,{
+                signature:signature,
+                publicKey: publicKey.toString()
+            });
+    
+            localStorage.setItem('token', response.data.token);
+            setIsAuthenticated(true);
+        }catch(error){
+            console.error("error signing:", error)
+        }
     }
 
     useEffect(()=>{
@@ -36,7 +48,7 @@ export const AppBar=()=>{
             CrowdRank | Creator Hub
         </div>
         <div>
-            {publicKey? <WalletDisconnectButton/>:<WalletMultiButton/>}
+            {publicKey && isAuthenticated? <WalletDisconnectButton/>:<WalletMultiButton/>}
         </div>
     </div>
 }

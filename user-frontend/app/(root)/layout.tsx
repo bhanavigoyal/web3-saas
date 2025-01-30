@@ -5,6 +5,7 @@ import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import {
     WalletModalProvider
 } from '@solana/wallet-adapter-react-ui';
+import { Toaster } from 'react-hot-toast';
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -24,6 +25,7 @@ export default function RootLayout({
         <ConnectionProvider endpoint={endpoint}>
             <WalletProvider wallets={wallets} autoConnect>
                 <WalletModalProvider>
+                    <Toaster position='top-right'/>
                     <div className='font-mono'>
                         {children}
                     </div>

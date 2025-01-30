@@ -1,8 +1,10 @@
 "use client";
 
 import { BACKEND_URL } from "@/utils"
+import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios"
 import { useEffect, useState } from "react"
+import toast from "react-hot-toast";
 
 interface Task{
     "id": number,
@@ -16,7 +18,8 @@ interface Task{
 }
 
 export const NextTask=()=>{
-    
+
+    const {publicKey} = useWallet();
     const [currentTask, setCurrentTask]= useState<Task | null>(null)
     const [loading , setLoading] = useState(true)
     const [submitting, setSumbmitting] = useState(false)
@@ -61,6 +64,11 @@ export const NextTask=()=>{
         </div>
         <div className="flex justify-center pt-8">
             {currentTask.options.map(option=><Option key={option.id} image_url={option.image_url} onSelect={async()=>{
+                if(!publicKey){
+                    toast.error("Connect Your Wallet");
+                    console.log("no key")
+                    return;
+                }
                 setSumbmitting(true)
                 try{
                     const response = await axios.post(`${BACKEND_URL}/v1/worker/submission`,{

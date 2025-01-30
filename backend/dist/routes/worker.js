@@ -155,12 +155,14 @@ router.post("/payout", middlewares_1.workerMiddleware, (req, res) => __awaiter(v
         });
     }
     if (!parentAddress) {
-        console.log("no parentAddress");
-        return;
+        return res.status(411).json({
+            message: "parent address not found"
+        });
     }
     if (!privateKey) {
-        console.log("no privatekey of parent wallet");
-        return;
+        return res.status(411).json({
+            message: "private key not found"
+        });
     }
     const transaction = new web3_js_1.Transaction().add(web3_js_1.SystemProgram.transfer({
         fromPubkey: new web3_js_1.PublicKey(parentAddress),
@@ -176,7 +178,7 @@ router.post("/payout", middlewares_1.workerMiddleware, (req, res) => __awaiter(v
         signature = yield (0, web3_js_1.sendAndConfirmTransaction)(connection, transaction, [keypair]);
     }
     catch (e) {
-        return res.json({
+        return res.status(401).json({
             message: "transaction failed"
         });
     }
@@ -204,7 +206,7 @@ router.post("/payout", middlewares_1.workerMiddleware, (req, res) => __awaiter(v
             }
         });
     }));
-    res.json({
+    res.status(200).json({
         message: "processing payout",
         amount: worker.pending_amount
     });

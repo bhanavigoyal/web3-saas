@@ -7,6 +7,7 @@ import { UploadImage } from "./UploadImage";
 import { Button, LoadingButton } from "./Button";
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import toast from "react-hot-toast";
 
 export const Upload=()=>{
     const [title, setTitle] = useState("");
@@ -42,6 +43,7 @@ export const Upload=()=>{
 
         router.push(`task/${response.data.id}`)
         setLoading(false)
+        toast.success("Task Submitted")
     }
 
     async function makePayment() {
@@ -80,9 +82,10 @@ export const Upload=()=>{
     
             await connection.confirmTransaction({blockhash, lastValidBlockHeight,signature});
             setTxSignature(signature);
+            toast.success("Transaction success")
         }catch(error){
             console.error("Transaction error:", error);
-            alert(`Transaction failed: ${error}`);
+            toast.error("Transaction failed");
         }
 
         setLoading(false)

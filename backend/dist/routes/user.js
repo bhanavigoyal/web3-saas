@@ -37,7 +37,6 @@ const prismaClient = new client_1.PrismaClient();
 router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { publicKey, signature } = req.body;
-        console.log(signature);
         const message = new TextEncoder().encode("Sign into mechanical Turks");
         const reconstructedSignature = new Uint8Array(signature.data);
         const result = tweetnacl_1.default.sign.detached.verify(message, reconstructedSignature, new web3_js_1.PublicKey(publicKey).toBytes());
@@ -101,7 +100,7 @@ router.get("/generatepresignedURL", middlewares_1.authMiddleware, (req, res) => 
     });
 }));
 router.post("/task", middlewares_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e;
     //@ts-ignore
     const userId = req.userId;
     const body = req.body;
@@ -134,8 +133,6 @@ router.post("/task", middlewares_1.authMiddleware, (req, res) => __awaiter(void 
         });
     }
     if (((_e = transaction === null || transaction === void 0 ? void 0 : transaction.transaction.message.getAccountKeys().get(1)) === null || _e === void 0 ? void 0 : _e.toString()) !== PARENT_WALLET_ADDRESS) {
-        console.log((_f = transaction === null || transaction === void 0 ? void 0 : transaction.transaction.message.getAccountKeys().get(1)) === null || _f === void 0 ? void 0 : _f.toString());
-        console.log(PARENT_WALLET_ADDRESS);
         return res.status(404).json({
             message: "transaction sent to wrong address"
         });
