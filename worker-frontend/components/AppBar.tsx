@@ -11,31 +11,51 @@ import { useBalance } from "@/context/BalanceContext";
 
 export const AppBar=()=>{
 
-    const {publicKey, signMessage} = useWallet();
-    const {balance, fetchBalance} = useBalance(); 
+    const {publicKey, signMessage, disconnect, connected, select} = useWallet();
+    const {balance, fetchBalance} = useBalance();
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
     const router = useRouter();
 
     async function signAndSend(){
-        if(!publicKey){
+        if(!publicKey || !signMessage){
             return;
         }
 
-        const message = new TextEncoder().encode("Sign into mechanical Turks as a worker");
-        const signature = await signMessage?.(message);
-        const response = await axios.post(`${BACKEND_URL}/v1/worker/signin`,{
-            signature,
-            publicKey: publicKey.toString()
-        });
+        const storedToken = localStorage.getItem('token')
+        console.log(storedToken)
+        if (storedToken){
+            setIsAuthenticated(true);
+            return;
+        }
+        try{
 
-        localStorage.setItem('token', response.data.token);
+            const message = new TextEncoder().encode("Sign into mechanical Turks as a worker");
+            const signature = await signMessage?.(message);
+            const response = await axios.post(`${BACKEND_URL}/v1/worker/signin`,{
+                signature,
+                publicKey: publicKey.toString()
+            });
+    
+            localStorage.setItem('token', response.data.token);
+            setIsAuthenticated(true)
+        }catch(error){
+            toast.error("could not connect the wallet");
+            setIsAuthenticated(false)
+            console.error("error signing:", error);
+            await disconnect();
+            select(null)
+        }
     }
 
     useEffect(()=>{
-        if(publicKey){
+        if(connected){
             signAndSend();
-            // getBalance();
+        }else{
+            localStorage.removeItem("token");
+            setIsAuthenticated(false);
+            select(null);
         }
-    },[publicKey])
+    },[publicKey]);
     
     return <div className="border bottom-1 p-2 flex justify-between text-lg items-center">
         <div className="cursor-pointer" onClick={()=>{
@@ -67,7 +87,14 @@ export const AppBar=()=>{
                 }}/>
             </div>
             <div>
-                {publicKey? <WalletDisconnectButton/>:<WalletMultiButton/>}
+            {isAuthenticated?(<WalletDisconnectButton onClick={async()=>{
+                localStorage.removeItem("token");
+                setIsAuthenticated(false);
+                await disconnect();
+                select(null);
+            }}/>):(
+                <WalletMultiButton/>
+            )}
             </div>
         </div>
     </div>
